@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: jamit-mongodb
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: jamit
+
+  backend:
+    build: ./backend
+    container_name: jamit-backend
+    ports:
+      - '3001:3001'
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/jamit
+      - JWT_SECRET=${JWT_SECRET:-jamit-dev-secret-change-in-production}
+      - AI_SERVICE_URL=http://ai-service:8000
+      - UPLOAD_DIR=/app/uploads
+    volumes:
+      - ./backend/uploads:/app/uploads
+    depends_on:
+      - mongodb
+      - ai-service
+
+  ai-service:
+    build: ./ai-service
+    container_name: jamit-ai
+    ports:
+      - '8000:8000'
+    environment:
+      - AI_MOCK_MODE=${AI_MOCK_MODE:-true}
+      - UPLOAD_DIR=/app/uploads
+    volumes:
+      - ./backend/uploads:/app/uploads
+
+  frontend:
+    build: ./frontend
+    container_name: jamit-frontend
+    ports:
+      - '5173:5173'
+    environment:
+      - VITE_API_URL=http://localhost:3001/api
+    depends_on:
+      - backend
+
+volumes:
+  mongodb_data:

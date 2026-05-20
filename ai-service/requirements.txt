@@ -1,0 +1,13 @@
+# Core API (Python 3.11–3.13 compatible — no numpy build required)
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9
+pydantic>=2.7.0
+python-dotenv>=1.0.1
+textblob>=0.18.0
+pydub>=0.25.1
+
+# Optional — install for real separation (large deps):
+# spleeter
+# torch
+# demucs
