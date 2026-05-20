@@ -36,15 +36,18 @@ Features: auth, upload, stem separation, remix studio, mood recommendations, com
 
 if (Get-Command gh -ErrorAction SilentlyContinue) {
     $visibility = if ($Public) { "--public" } else { "--private" }
-    $remote = git remote get-url origin 2>$null
+    $remote = git remote 2>$null | Select-String -Pattern "^origin$"
     if (-not $remote) {
         Write-Host "Creating GitHub repo '$RepoName'..." -ForegroundColor Cyan
         gh repo create $RepoName $visibility --source=. --remote=origin --push
     } else {
-        Write-Host "Remote exists: $remote" -ForegroundColor Cyan
-        git push -u origin HEAD
+        Write-Host "Remote origin already exists. Pushing..." -ForegroundColor Cyan
+        git push -u origin main
     }
-    Write-Host "Done! Open: https://github.com/$(gh api user -q .login)/$RepoName" -ForegroundColor Green
+    $user = gh api user -q .login 2>$null
+    if ($user) {
+        Write-Host "Done! Open: https://github.com/$user/$RepoName" -ForegroundColor Green
+    }
 } else {
     Write-Host ""
     Write-Host "GitHub CLI (gh) not found. Do this manually:" -ForegroundColor Yellow
