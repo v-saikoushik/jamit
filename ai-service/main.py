@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from routers import separate, mood, recommend, remix
+from routers import audio_editor, separate, mood, recommend, remix
 
 load_dotenv()
 
@@ -29,6 +29,7 @@ app.include_router(separate.router, prefix="/api", tags=["separation"])
 app.include_router(mood.router, prefix="/api/mood", tags=["mood"])
 app.include_router(recommend.router, prefix="/api", tags=["recommendations"])
 app.include_router(remix.router, prefix="/api/remix", tags=["remix"])
+app.include_router(audio_editor.router, prefix="/api/audio-editor", tags=["audio-editor"])
 
 
 @app.get("/health")
