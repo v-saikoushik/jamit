@@ -5,7 +5,7 @@ export interface Track {
   title: string;
   artist: string;
   streamUrl: string;
-  type: 'song' | 'remix';
+  type: 'song' | 'remix' | 'clip';
   coverUrl?: string;
 }
 

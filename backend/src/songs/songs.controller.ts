@@ -1,6 +1,7 @@
 import {
   Controller, Get, Post, Patch, Delete, Param, Body, UseGuards,
   UseInterceptors, UploadedFile, Query, Res, StreamableFile,
+  NotFoundException, ForbiddenException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth, ApiConsumes, ApiOperation } from '@nestjs/swagger';
@@ -12,7 +13,7 @@ import * as fs from 'fs';
 import { SongsService } from './songs.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { UpdateSongDto } from './dto/song.dto';
+import { UpdateSongDto, TrimSongDto, MergeSongsDto } from './dto/song.dto';
 
 const uploadDir = process.env.UPLOAD_DIR || './uploads';
 
@@ -81,6 +82,38 @@ export class SongsController {
   @UseGuards(JwtAuthGuard)
   separate(@Param('id') id: string, @CurrentUser('userId') userId: string) {
     return this.songsService.separate(id, userId);
+  }
+
+  @Post(':id/trim')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  trim(@Param('id') id: string, @CurrentUser('userId') userId: string, @Body() dto: TrimSongDto) {
+    return this.songsService.trimAudio(id, userId, dto.startTime, dto.endTime);
+  }
+
+  @Post('merge')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  merge(@CurrentUser('userId') userId: string, @Body() dto: MergeSongsDto) {
+    return this.songsService.mergeAudio(userId, dto.songIds, dto.outputName);
+  }
+
+  @Get(':id/stem')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async streamStem(
+    @Param('id') id: string,
+    @Query('part') part: 'vocals' | 'instrumentals',
+    @CurrentUser('userId') userId: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const song = await this.songsService.findById(id);
+    if (song.uploadedBy.toString() !== userId) throw new ForbiddenException();
+    const targetPath = part === 'vocals' ? song.vocalsPath : song.instrumentalsPath;
+    if (!targetPath) throw new NotFoundException(`${part} stem not available for this song`);
+    const file = fs.createReadStream(targetPath);
+    res.set({ 'Content-Type': 'audio/mpeg' });
+    return new StreamableFile(file);
   }
 
   @Patch(':id')

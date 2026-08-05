@@ -39,7 +39,12 @@ export const songsApi = {
     api.post('/songs/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   separate: (id: string) => api.post(`/songs/${id}/separate`),
   play: (id: string) => api.post(`/songs/${id}/play`),
+  trim: (id: string, data: { startTime: number; endTime: number }) =>
+    api.post(`/songs/${id}/trim`, data),
+  merge: (data: { songIds: string[]; outputName?: string }) => api.post('/songs/merge', data),
   streamUrl: (id: string) => `${API_URL}/songs/${id}/stream`,
+  stemStreamUrl: (id: string, part: 'vocals' | 'instrumentals') =>
+    `${API_URL}/songs/${id}/stem?part=${part}`,
 };
 
 export const remixApi = {

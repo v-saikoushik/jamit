@@ -3,6 +3,8 @@ import { Document, Types } from 'mongoose';
 
 export type SongDocument = Song & Document;
 
+export type SongSourceType = 'library' | 'uploaded' | 'trim' | 'merged' | 'stem' | 'remix';
+
 @Schema({ timestamps: true })
 export class Song {
   @Prop({ required: true })
@@ -11,8 +13,24 @@ export class Song {
   @Prop({ default: 'Unknown Artist' })
   artist: string;
 
+  @Prop({ default: '' })
+  originalName: string;
+
   @Prop({ required: true })
   filePath: string;
+
+  @Prop({ default: '' })
+  storageKey: string;
+
+  @Prop({
+    type: String,
+    enum: ['library', 'uploaded', 'trim', 'merged', 'stem', 'remix'],
+    default: 'uploaded',
+  })
+  sourceType: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'Song' })
+  sourceSongId: Types.ObjectId;
 
   @Prop({ default: '' })
   coverUrl: string;

@@ -37,4 +37,22 @@ export class AiService {
     });
     return data;
   }
+
+  async trimAudio(inputPath: string, outputName: string, startTime: number, duration: number) {
+    const { data } = await axios.post(`${this.baseUrl}/api/audio-editor/trim`, {
+      input_path: inputPath,
+      output_name: outputName,
+      start_time: startTime,
+      duration,
+    });
+    return data;
+  }
+
+  async mergeAudio(inputPaths: string[], outputName: string) {
+    const { data } = await axios.post(`${this.baseUrl}/api/audio-editor/merge`, {
+      input_paths: inputPaths,
+      output_name: outputName,
+    });
+    return data;
+  }
 }
